@@ -56,7 +56,7 @@ def run_analysis():
     global Actuals_WB_JDE
 
     
-    tasks = ['130', '131', '133', '200', '205', '225', '235', '245', '255', '270', '280', '295', '315', '380', '400', '415', '430', '440', '450', '455', '465', '485', '500', '510', '515', '999']
+    tasks = ['130', '131', '133', '200', '205', '225', '235', '245', '255', '270', '280', '295', '315', '380', '400', '415', '430', '440', '450', '455', '465', '485', '500', '510', '515', '599', '999']
     P_C = ['600', '610', '620', '630', '640', '650', '660', '670', '680', '690', '700', '710', '715', '720', '725', '730']
 
 
@@ -173,13 +173,17 @@ def run_analysis():
                 if fringe != None:
                     personnel_brdn += fringe
                 if hours_OT != None:
-                        des_hours_OT += hours_OT
+                    des_hours_OT += hours_OT
                         
             if sub == 120:
                 ins_hours = hours
                 personnel += dollars
                 if hours_OT != None:
-                        ins_hours_OT = hours_OT
+                    ins_hours_OT = hours_OT
+                if brdn != None:
+                    personnel_brdn += brdn
+                if fringe != None:
+                    personnel_brdn += fringe
                         
             if sub == 800:
                 met_hours = hours
@@ -227,8 +231,14 @@ def run_analysis():
 
         Actuals_WS_JDE = Actuals_WB_JDE.active
         
-
         for i in range(1, Actuals_WS_JDE.max_row + 1):
+            if Actuals_WS_JDE.cell(row= i, column= 1).value == "Labor Billing Distribution":
+                start = i
+            if Actuals_WS_JDE.cell(row= i, column= 1).value == "Total:Labor Billing Distribution":
+                end = i
+                break
+
+        for i in range(start, end):
             code = Actuals_WS_JDE.cell(row= i, column= 7).value
             hours_actual = Actuals_WS_JDE.cell(row= i, column= 4).value
             hour_desc = Actuals_WS_JDE.cell(row= i, column= 1).value
@@ -242,43 +252,48 @@ def run_analysis():
                 desc_split = hour_desc.split()
             if len(desc_split) >= 4:
                 hour_type = desc_split[-2]
+            if hours_actual != None:
                 if task_code == '1':
-                    if hour_type == "001" or hour_type == "085":
-                        Hours_actual_type1 += hours_actual
-                    elif hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
+                    if hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
                         Hours_actual_type1_OT += hours_actual
+                    else:
+                        Hours_actual_type1 += hours_actual
                 if task_code == '170' or task_code == '115' or task_code == '110':
-                    if hour_type == "001" or hour_type == "085":
-                        Hours_actual_des += hours_actual
-                    elif hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
+                    if hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
                         Hours_actual_des_OT += hours_actual
+                    else:
+                        Hours_actual_des += hours_actual
                 if task_code == '120':
-                    if hour_type == "001" or hour_type == "085":
-                        Hours_actual_ins += hours_actual
-                    elif hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
+                    if hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
                         Hours_actual_ins_OT += hours_actual
+                    else:
+                        Hours_actual_ins += hours_actual                        
                 if task_code == '100':
-                    if hour_type == "001" or hour_type == "085":
-                        Hours_actual_lines += hours_actual
-                    elif hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
+                    if hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
                         Hours_actual_lines_OT += hours_actual
-                for k in range(len(tasks)):
+                    else:
+                        Hours_actual_lines += hours_actual                        
+                for k in range(len(tasks)) :
                     if task_code == tasks[k]:
-                        if hour_type == "001" or hour_type == "085":
-                            Hours_actual_lines += hours_actual
-                        elif hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
+                        if hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
                             Hours_actual_lines_OT += hours_actual
+                            break
+                        else:
+                            Hours_actual_lines += hours_actual
+                            break
                 for k in range(len(P_C)):
                     if task_code == P_C[k]:
-                        if hour_type == "001" or hour_type == "085":
-                            Hours_actual_PC += hours_actual
-                        elif hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
+                        if hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
                             Hours_actual_PC_OT += hours_actual
+                            break
+                        else:
+                            Hours_actual_PC += hours_actual
+                            break
                 if task_code == '800':
-                    if hour_type == "001" or hour_type == "085":
-                        Hours_actual_met += hours_actual
-                    elif hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
+                    if hour_type == "003" or hour_type == "322" or hour_type == "086" or hour_type == "045":
                         Hours_actual_met_OT += hours_actual
+                    else:
+                        Hours_actual_met += hours_actual                        
 
         PVA_WS['C44'] = Hours_actual_type1
         PVA_WS['C45'] = Hours_actual_type1_OT
@@ -317,7 +332,7 @@ def run_analysis():
                 category_type = category_split[-1]
             else:
                 category_type = 0
-            if category_type == "DESR" or category_type == "LABR" or category_type == "LABO":
+            if category_type == "DESR" or category_type == "LABR" or category_type == "LABO" or category_type == "NUR" or category_type == "NUO":
                 personnel_actuals += actual_dollars
             if category_type == "DESF" or category_type == "LABF" or category_type == "LABB":
                 personnel_actuals_brdn += actual_dollars
